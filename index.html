@@ -231,12 +231,12 @@
 </div>
 
 <script>
-    // ★ 본인의 Apps Script 웹 앱 URL 주소를 확인해서 넣어주세요. ★
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbxBXQEt7kxHmmTT3THFAR5XBu3snBNr7PnFsER7MfKgpMxA4o6-1gnQUsgUHJVayP8/exec"; 
+    // ★ 본인의 Apps Script 웹 앱 URL 주소를 넣어주세요. ★
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbz4o1LxeCYFlSKT5XISWAad1yQuHZclZKIsMTaVrHXcvT1fmXq_JWY9mB_OLtBQH6gw/exec"; 
 
     let currentUserData = null;
 
-    // Form 객체를 동적으로 생성해 보냄으로써 100% 데이터 수신을 보장
+    // 히든 iframe을 통한 안전한 Form POST 전송
     function sendDataViaForm(data, callback) {
         let iframe = document.getElementById('hidden_iframe');
         if (!iframe) {
@@ -252,7 +252,6 @@
         form.action = GAS_URL;
         form.target = 'hidden_iframe';
 
-        // data의 각 key, value를 input으로 추가
         for (let key in data) {
             if (data.hasOwnProperty(key)) {
                 const input = document.createElement('input');
@@ -450,7 +449,7 @@
         });
     }  
 
-    // 출퇴근 버튼 클릭
+    // 출퇴근 버튼 클릭 (이름, 나이, 주민번호 데이터 확실히 전달)
     function recordWork(type) {  
         if (!currentUserData) {  
             alert('로그인 정보가 없습니다.');  
