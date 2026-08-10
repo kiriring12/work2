@@ -186,9 +186,9 @@
 
     <div id="message"></div>
 
-    <!-- 동명이인 선택 영역 -->
+    <!-- 동명이인/동일 생년월일 선택 영역 -->
     <div id="selectBox" class="select-box hidden">
-        <h4 style="margin: 0 0 10px 0; color: #d97706; text-align: center;">동명이인이 존재합니다.</h4>
+        <h4 style="margin: 0 0 10px 0; color: #d97706; text-align: center;">동일 생년월일 회원이 존재합니다.</h4>
         <p style="margin: 0 0 10px 0; font-size: 14px; text-align: center; color: #555;">본인의 주소를 선택해 주세요.</p>
         <div id="addressList"></div>
     </div>
@@ -213,7 +213,7 @@
 </div>
 
 <script>
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbwI54KE-v1Ov2DHDhDnM3eRoVjemKrG5njNq-9a25_IHJUUqENrjA5jS90_wXGjMIrB/exec";
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbzUULAFF0ahLKTmR6tI1PsfAmiTPI5Pmku53ISbghnNkneaA29nIMuN3obobdCTQfNU/exec";
     let currentUserData = null;
 
     // 음성(TTS) 재생 함수
@@ -235,7 +235,7 @@
         }
     }
 
-    // 초기 화면으로 리셋
+    // 초기 화면 리셋
     function resetToHome(messageText) {
         currentUserData = null;
         document.getElementById('existingForm').reset();
@@ -270,7 +270,7 @@
         }
     }
 
-    // 단일 회원 정보 화면에 표시
+    // 단일 회원 정보 화면 표시
     function displayUserInfo(data) {
         currentUserData = data;
         document.getElementById('resName').innerText = data.name;
@@ -308,7 +308,6 @@
                 messageDiv.innerText = '';
                 displayUserInfo(data.data);
             } else if (data.result === 'multiple') {
-                // 동명이인이 여러 명인 경우 주소 목록 생성
                 messageDiv.innerText = '';
                 const addressListDiv = document.getElementById('addressList');
                 addressListDiv.innerHTML = '';
@@ -340,7 +339,7 @@
         });
     });
 
-    // 신규 회원 등록
+    // 신규 회원 등록 (text/plain 처리로 CORS 헤더 문제 차단)
     document.getElementById('newForm').addEventListener('submit', function(e) {
         e.preventDefault();
 
@@ -368,7 +367,7 @@
         fetch(GAS_URL, {
             method: 'POST',
             headers: {
-                'Content-Type': 'text/plain;charset=utf-8', // application/json 대신 text/plain 사용 (CORS 회피)
+                'Content-Type': 'text/plain;charset=utf-8'
             },
             body: JSON.stringify(payload)
         })
@@ -428,7 +427,9 @@
 
         fetch(GAS_URL, {
             method: 'POST',
-            contentType: 'application/json',
+            headers: {
+                'Content-Type': 'text/plain;charset=utf-8'
+            },
             body: JSON.stringify(payload)
         })
         .then(response => response.json())
