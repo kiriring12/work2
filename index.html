@@ -1,471 +1,458 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>회원 및 출퇴근 관리</title>
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f4f7f6;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-        }
-        .container {
-            background-color: #ffffff;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            width: 380px;
-        }
-        h2 {
-            margin-bottom: 20px;
-            color: #333;
-            text-align: center;
-        }
-        .btn-group {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-        .btn-group button {
-            flex: 1;
-            padding: 12px;
-            font-size: 15px;
-            border: 1px solid #4CAF50;
-            background-color: white;
-            color: #4CAF50;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-        .btn-group button.active {
-            background-color: #4CAF50;
-            color: white;
-        }
-        .form-group {
-            margin-bottom: 15px;
-        }
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-            color: #555;
-        }
-        input[type="text"] {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
-        .submit-btn {
-            width: 100%;
-            padding: 12px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            font-size: 16px;
-            cursor: pointer;
-            margin-top: 10px;
-        }
-        .submit-btn:hover {
-            background-color: #45a049;
-        }
-        .work-btn-group {
-            display: flex;
-            gap: 10px;
-            margin-top: 15px;
-        }
-        .btn-clock-in {
-            flex: 1;
-            padding: 12px;
-            background-color: #2196F3;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            font-size: 16px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-        .btn-clock-out {
-            flex: 1;
-            padding: 12px;
-            background-color: #f44336;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            font-size: 16px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-        #message {
-            margin-top: 15px;
-            text-align: center;
-            font-weight: bold;
-        }
-        .result-box {
-            margin-top: 20px;
-            padding: 15px;
-            background-color: #eef7ee;
-            border: 1px solid #c3e6c3;
-            border-radius: 4px;
-        }
-        .result-box p {
-            margin: 8px 0;
-            color: #333;
-        }
-        .select-box {
-            margin-top: 15px;
-            padding: 15px;
-            background-color: #fff9e6;
-            border: 1px solid #ffe0b2;
-            border-radius: 4px;
-        }
-        .address-item {
-            padding: 10px;
-            margin-top: 8px;
-            background-color: white;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-        .address-item:hover {
-            background-color: #f0f0f0;
-            border-color: #4CAF50;
-        }
-        .hidden {
-            display: none;
-        }
-    </style>
-</head>
-<body>
-
-<div class="container">
-    <h2>회원 서비스</h2>
-    
-    <div class="btn-group">
-        <button type="button" id="tabExisting" class="active" onclick="switchMode('existing')">기존 회원</button>
-        <button type="button" id="tabNew" onclick="switchMode('new')">신규 회원</button>
-    </div>
-
-    <!-- 기존 회원 인증 -->
-    <div id="existingForm">
-        <div class="form-group">
-            <label for="exName">이름</label>
-            <input type="text" id="exName" placeholder="홍길동" required>
-        </div>
-        <div class="form-group">
-            <label for="exBirth">생년월일 (6자리)</label>
-            <input type="text" id="exBirth" placeholder="010101" maxlength="6" required>
-        </div>
-        <button type="button" class="submit-btn" onclick="submitExisting()">회원 확인 및 데이터 조회</button>
-    </div>
-
-    <!-- 신규 회원 등록 -->
-    <div id="newForm" class="hidden">
-        <div class="form-group">
-            <label for="newName">이름</label>
-            <input type="text" id="newName" placeholder="홍길동" required>
-        </div>
-        <div class="form-group">
-            <label for="newRrn">주민등록번호</label>
-            <input type="text" id="newRrn" placeholder="010101-3000000" maxlength="14" required>
-        </div>
-        <div class="form-group">
-            <label for="newAddress">주소</label>
-            <input type="text" id="newAddress" placeholder="서울특별시 강남구..." required>
-        </div>
-        <button type="button" class="submit-btn" onclick="submitNew()">등록하기</button>
-    </div>
-
-    <div id="message"></div>
-
-    <!-- 동명이인/동일 생년월일 선택 영역 -->
-    <div id="selectBox" class="select-box hidden">
-        <h4 style="margin: 0 0 10px 0; color: #d97706; text-align: center;">동일 생년월일 회원이 존재합니다.</h4>
-        <p style="margin: 0 0 10px 0; font-size: 14px; text-align: center; color: #555;">본인의 주소를 선택해 주세요.</p>
-        <div id="addressList"></div>
-    </div>
-
-    <!-- 조회 결과 및 출퇴근 선택 영역 -->
-    <div id="resultBox" class="result-box hidden">
-        <h3>회원 정보</h3>
-        <p><strong>이름:</strong> <span id="resName"></span></p>
-        <p><strong>나이:</strong> <span id="resAge"></span>세</p>
-        <p><strong>성별:</strong> <span id="resGender"></span></p>
-        <p><strong>주민등록번호:</strong> <span id="resRrn"></span></p>
-        <p><strong>주소:</strong> <span id="resAddress"></span></p>
-
-        <hr style="margin: 15px 0; border: 0; border-top: 1px solid #ccc;">
-
-        <h4 style="margin: 10px 0; text-align: center;">출/퇴근 등록</h4>
-        <div class="work-btn-group">
-            <button type="button" class="btn-clock-in" onclick="recordWork('출근')">출근하기</button>
-            <button type="button" class="btn-clock-out" onclick="recordWork('퇴근')">퇴근하기</button>
-        </div>
-    </div>
-</div>
-
-<script>
-    // 복사한 새 배포 URL을 지정하세요.
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbyj9iMRPG_3t44edpBwyXRPewEb_vaqoZ9U85f--jyD3rEWjXUgRTMUS1ausQsIGPhZ/exec";
-    let currentUserData = null;
-
-    // 음성(TTS) 재생
-    function speakText(text, callback) {
-        if ('speechSynthesis' in window) {
-            window.speechSynthesis.cancel();
-            const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = 'ko-KR';
-            utterance.rate = 1.0;
-            
-            if (callback) {
-                utterance.onend = callback;
-                utterance.onerror = callback;
-            }
-            window.speechSynthesis.speak(utterance);
-        } else {
-            if (callback) callback();
-        }
-    }
-
-    // 초기 화면 리셋
-    function resetToHome(messageText) {
-        currentUserData = null;
-        document.getElementById('exName').value = '';
-        document.getElementById('exBirth').value = '';
-        document.getElementById('newName').value = '';
-        document.getElementById('newRrn').value = '';
-        document.getElementById('newAddress').value = '';
-        
-        document.getElementById('resultBox').classList.add('hidden');
-        document.getElementById('selectBox').classList.add('hidden');
-        switchMode('existing');
-        
-        if (messageText) {
-            const messageDiv = document.getElementById('message');
-            messageDiv.style.color = 'green';
-            messageDiv.innerText = messageText;
-        }
-    }
-
-    function switchMode(mode) {
-        document.getElementById('message').innerText = '';
-        document.getElementById('resultBox').classList.add('hidden');
-        document.getElementById('selectBox').classList.add('hidden');
-        currentUserData = null;
-
-        if (mode === 'existing') {
-            document.getElementById('tabExisting').classList.add('active');
-            document.getElementById('tabNew').classList.remove('active');
-            document.getElementById('existingForm').classList.remove('hidden');
-            document.getElementById('newForm').classList.add('hidden');
-        } else {
-            document.getElementById('tabNew').classList.add('active');
-            document.getElementById('tabExisting').classList.remove('active');
-            document.getElementById('newForm').classList.remove('hidden');
-            document.getElementById('existingForm').classList.add('hidden');
-        }
-    }
-
-    function displayUserInfo(data) {
-        currentUserData = data;
-        document.getElementById('resName').innerText = data.name;
-        document.getElementById('resAge').innerText = data.age;
-        document.getElementById('resGender').innerText = data.gender;
-        document.getElementById('resRrn').innerText = data.rrn;
-        document.getElementById('resAddress').innerText = data.address;
-        
-        document.getElementById('selectBox').classList.add('hidden');
-        document.getElementById('resultBox').classList.remove('hidden');
-    }
-
-    // 기존 회원 조회
-    function submitExisting() {
-        const name = document.getElementById('exName').value.trim();
-        const birth = document.getElementById('exBirth').value.trim();
-        const messageDiv = document.getElementById('message');
-
-        if (!name || !birth) {
-            alert('이름과 생년월일을 모두 입력해주세요.');
-            return;
-        }
-
-        const cleanBirth = birth.replace(/[^0-9]/g, '');
-        if (cleanBirth.length !== 6) {
-            alert('생년월일 6자리를 숫자만 올바르게 입력해주세요. (예: 010101)');
-            return;
-        }
-
-        messageDiv.style.color = 'blue';
-        messageDiv.innerText = '정보 조회 중...';
-        document.getElementById('resultBox').classList.add('hidden');
-        document.getElementById('selectBox').classList.add('hidden');
-
-        fetch(`${GAS_URL}?name=${encodeURIComponent(name)}&birth=${encodeURIComponent(cleanBirth)}`, {
-            method: 'GET',
-            redirect: 'follow'
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.result === 'found') {
-                messageDiv.innerText = '';
-                displayUserInfo(data.data);
-            } else if (data.result === 'multiple') {
-                messageDiv.innerText = '';
-                const addressListDiv = document.getElementById('addressList');
-                addressListDiv.innerHTML = '';
-                
-                data.list.forEach((item, index) => {
-                    const div = document.createElement('div');
-                    div.className = 'address-item';
-                    div.innerHTML = `<strong>주소 ${index + 1}:</strong> ${item.address}`;
-                    div.onclick = function() {
-                        displayUserInfo(item);
-                    };
-                    addressListDiv.appendChild(div);
-                });
-                
-                document.getElementById('selectBox').classList.remove('hidden');
-
-            } else if (data.result === 'not_found') {
-                messageDiv.style.color = 'red';
-                messageDiv.innerText = '일치하는 회원 정보를 찾을 수 없습니다.';
-            } else {
-                messageDiv.style.color = 'red';
-                messageDiv.innerText = '오류 발생: ' + data.error;
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            messageDiv.style.color = 'red';
-            messageDiv.innerText = '조회 중 오류가 발생했습니다.';
-        });
-    }
-
-    // 신규 회원 등록
-    function submitNew() {
-        const name = document.getElementById('newName').value.trim();
-        const rrn = document.getElementById('newRrn').value.trim();
-        const address = document.getElementById('newAddress').value.trim();
-        const messageDiv = document.getElementById('message');
-
-        if (!name || !rrn || !address) {
-            alert('모든 항목을 입력해주세요.');
-            return;
-        }
-
-        let cleanRrn = rrn.replace(/[^0-9]/g, '');
-        if (cleanRrn.length !== 13) {
-            alert('주민등록번호 13자리를 올바르게 입력해주세요.');
-            return;
-        }
-
-        messageDiv.style.color = 'blue';
-        messageDiv.innerText = '등록 중입니다...';
-
-        const payload = {
-            action: 'register',
-            name: name,
-            rrn: cleanRrn,
-            address: address
-        };
-
+<!DOCTYPE html>  
+<html lang="ko">  
+<head>  
+    <meta charset="UTF-8">  
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">  
+    <title>회원 및 출퇴근 관리</title>  
+    <style>  
+        body {  
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;  
+            background-color: #f4f7f6;  
+            display: flex;  
+            justify-content: center;  
+            align-items: center;  
+            min-height: 100vh;  
+            margin: 0;  
+        }  
+        .container {  
+            background-color: #ffffff;  
+            padding: 30px;  
+            border-radius: 8px;  
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);  
+            width: 380px;  
+        }  
+        h2 {  
+            margin-bottom: 20px;  
+            color: #333;  
+            text-align: center;  
+        }  
+        .btn-group {  
+            display: flex;  
+            gap: 10px;  
+            margin-bottom: 20px;  
+        }  
+        .btn-group button {  
+            flex: 1;  
+            padding: 12px;  
+            font-size: 15px;  
+            border: 1px solid #4CAF50;  
+            background-color: white;  
+            color: #4CAF50;  
+            border-radius: 4px;  
+            cursor: pointer;  
+            font-weight: bold;  
+        }  
+        .btn-group button.active {  
+            background-color: #4CAF50;  
+            color: white;  
+        }  
+        .form-group {  
+            margin-bottom: 15px;  
+        }  
+        label {  
+            display: block;  
+            margin-bottom: 5px;  
+            font-weight: bold;  
+            color: #555;  
+        }  
+        input[type="text"] {  
+            width: 100%;  
+            padding: 10px;  
+            border: 1px solid #ccc;  
+            border-radius: 4px;  
+            box-sizing: border-box;  
+        }  
+        .submit-btn {  
+            width: 100%;  
+            padding: 12px;  
+            background-color: #4CAF50;  
+            color: white;  
+            border: none;  
+            border-radius: 4px;  
+            font-size: 16px;  
+            cursor: pointer;  
+            margin-top: 10px;  
+        }  
+        .submit-btn:hover {  
+            background-color: #45a049;  
+        }  
+        .work-btn-group {  
+            display: flex;  
+            gap: 10px;  
+            margin-top: 15px;  
+        }  
+        .btn-clock-in {  
+            flex: 1;  
+            padding: 12px;  
+            background-color: #2196F3;  
+            color: white;  
+            border: none;  
+            border-radius: 4px;  
+            font-size: 16px;  
+            cursor: pointer;  
+            font-weight: bold;  
+        }  
+        .btn-clock-out {  
+            flex: 1;  
+            padding: 12px;  
+            background-color: #f44336;  
+            color: white;  
+            border: none;  
+            border-radius: 4px;  
+            font-size: 16px;  
+            cursor: pointer;  
+            font-weight: bold;  
+        }  
+        #message {  
+            margin-top: 15px;  
+            text-align: center;  
+            font-weight: bold;  
+        }  
+        .result-box {  
+            margin-top: 20px;  
+            padding: 15px;  
+            background-color: #eef7ee;  
+            border: 1px solid #c3e6c3;  
+            border-radius: 4px;  
+        }  
+        .result-box p {  
+            margin: 8px 0;  
+            color: #333;  
+        }  
+        .select-box {  
+            margin-top: 20px;  
+            padding: 15px;  
+            background-color: #fff9e6;  
+            border: 1px solid #ffe0b2;  
+            border-radius: 4px;  
+        }  
+        .address-item {  
+            padding: 10px;  
+            margin-top: 8px;  
+            background-color: white;  
+            border: 1px solid #ddd;  
+            border-radius: 4px;  
+            cursor: pointer;  
+            transition: background-color 0.2s;  
+        }  
+        .address-item:hover {  
+            background-color: #f0f0f0;  
+            border-color: #4CAF50;  
+        }  
+        .hidden {  
+            display: none;  
+        }  
+    </style>  
+</head>  
+<body>  
+  
+<div class="container">  
+    <h2>회원 서비스</h2>  
+      
+    <div class="btn-group">  
+        <button type="button" id="tabExisting" class="active" onclick="switchMode('existing')">기존 회원</button>  
+        <button type="button" id="tabNew" onclick="switchMode('new')">신규 회원</button>  
+    </div>  
+  
+    <!-- 기존 회원 인증 -->  
+    <div id="existingForm">  
+        <div class="form-group">  
+            <label for="exName">이름</label>  
+            <input type="text" id="exName" placeholder="홍길동" required>  
+        </div>  
+        <div class="form-group">  
+            <label for="exBirth">생년월일 (6자리)</label>  
+            <input type="text" id="exBirth" placeholder="010101" maxlength="6" required>  
+        </div>  
+        <button type="button" class="submit-btn" onclick="submitExisting()">회원 확인 및 데이터 조회</button>  
+    </div>  
+  
+    <!-- 신규 회원 등록 -->  
+    <div id="newForm" class="hidden">  
+        <div class="form-group">  
+            <label for="newName">이름</label>  
+            <input type="text" id="newName" placeholder="홍길동" required>  
+        </div>  
+        <div class="form-group">  
+            <label for="newRrn">주민등록번호</label>  
+            <input type="text" id="newRrn" placeholder="010101-3000000" maxlength="14" required>  
+        </div>  
+        <div class="form-group">  
+            <label for="newAddress">주소</label>  
+            <input type="text" id="newAddress" placeholder="서울특별시 강남구..." required>  
+        </div>  
+        <button type="button" class="submit-btn" onclick="submitNew()">등록하기</button>  
+    </div>  
+  
+    <div id="message"></div>  
+  
+    <!-- 동명이인/동일 생년월일 선택 영역 -->  
+    <div id="selectBox" class="select-box hidden">  
+        <h4 style="margin: 0 0 10px 0; color: #d97706; text-align: center;">동일 생년월일 회원이 존재합니다.</h4>  
+        <p style="margin: 0 0 10px 0; font-size: 14px; text-align: center; color: #555;">본인의 주소를 선택해 주세요.</p>  
+        <div id="addressList"></div>  
+    </div>  
+  
+    <!-- 조회 결과 및 출퇴근 선택 영역 -->  
+    <div id="resultBox" class="result-box hidden">  
+        <h3>회원 정보</h3>  
+        <p><strong>이름:</strong> <span id="resName"></span></p>  
+        <p><strong>나이:</strong> <span id="resAge"></span>세</p>  
+        <p><strong>성별:</strong> <span id="resGender"></span></p>  
+        <p><strong>주민등록번호:</strong> <span id="resRrn"></span></p>  
+        <p><strong>주소:</strong> <span id="resAddress"></span></p>  
+  
+        <hr style="margin: 15px 0; border: 0; border-top: 1px solid #ccc;">  
+  
+        <h4 style="margin: 10px 0; text-align: center;">출/퇴근 등록</h4>  
+        <div class="work-btn-group">  
+            <button type="button" class="btn-clock-in" onclick="recordWork('출근')">출근하기</button>  
+            <button type="button" class="btn-clock-out" onclick="recordWork('퇴근')">퇴근하기</button>  
+        </div>  
+    </div>  
+</div>  
+  
+<script>  
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbzUWtTe1rW4h6ndubrgZ8ynxBnc2SWq2QIrYEBhsWbnDk7wiGxNwzUH34hsrvsI2WyV/exec"; // Apps Script 배포 URL 입력  
+    let currentUserData = null;  
+  
+    function speakText(text, callback) {  
+        if ('speechSynthesis' in window) {  
+            window.speechSynthesis.cancel();  
+            const utterance = new SpeechSynthesisUtterance(text);  
+            utterance.lang = 'ko-KR';  
+            utterance.rate = 1.0;  
+            if (callback) {  
+                utterance.onend = callback;  
+                utterance.onerror = callback;  
+            }  
+            window.speechSynthesis.speak(utterance);  
+        } else {  
+            if (callback) callback();  
+        }  
+    }  
+  
+    function resetToHome(messageText) {  
+        currentUserData = null;  
+        document.getElementById('exName').value = '';  
+        document.getElementById('exBirth').value = '';  
+        document.getElementById('newName').value = '';  
+        document.getElementById('newRrn').value = '';  
+        document.getElementById('newAddress').value = '';  
+          
+        document.getElementById('resultBox').classList.add('hidden');  
+        document.getElementById('selectBox').classList.add('hidden');  
+        switchMode('existing');  
+          
+        if (messageText) {  
+            const messageDiv = document.getElementById('message');  
+            messageDiv.style.color = 'green';  
+            messageDiv.innerText = messageText;  
+        }  
+    }  
+  
+    function switchMode(mode) {  
+        document.getElementById('message').innerText = '';  
+        document.getElementById('resultBox').classList.add('hidden');  
+        document.getElementById('selectBox').classList.add('hidden');  
+        currentUserData = null;  
+  
+        if (mode === 'existing') {  
+            document.getElementById('tabExisting').classList.add('active');  
+            document.getElementById('tabNew').classList.remove('active');  
+            document.getElementById('existingForm').classList.remove('hidden');  
+            document.getElementById('newForm').classList.add('hidden');  
+        } else {  
+            document.getElementById('tabNew').classList.add('active');  
+            document.getElementById('tabExisting').classList.remove('active');  
+            document.getElementById('newForm').classList.remove('hidden');  
+            document.getElementById('existingForm').classList.add('hidden');  
+        }  
+    }  
+  
+    function displayUserInfo(data) {  
+        currentUserData = data;  
+        document.getElementById('resName').innerText = data.name;  
+        document.getElementById('resAge').innerText = data.age;  
+        document.getElementById('resGender').innerText = data.gender;  
+        document.getElementById('resRrn').innerText = data.rrn;  
+        document.getElementById('resAddress').innerText = data.address;  
+          
+        document.getElementById('selectBox').classList.add('hidden');  
+        document.getElementById('resultBox').classList.remove('hidden');  
+    }  
+  
+    function submitExisting() {  
+        const name = document.getElementById('exName').value.trim();  
+        const birth = document.getElementById('exBirth').value.trim();  
+        const messageDiv = document.getElementById('message');  
+  
+        if (!name || !birth) {  
+            alert('이름과 생년월일을 모두 입력해주세요.');  
+            return;  
+        }  
+  
+        const cleanBirth = birth.replace(/[^0-9]/g, '');  
+        if (cleanBirth.length !== 6) {  
+            alert('생년월일 6자리를 숫자만 올바르게 입력해주세요. (예: 010101)');  
+            return;  
+        }  
+  
+        messageDiv.style.color = 'blue';  
+        messageDiv.innerText = '정보 조회 중...';  
+        document.getElementById('resultBox').classList.add('hidden');  
+        document.getElementById('selectBox').classList.add('hidden');  
+  
+        fetch(`${GAS_URL}?name=${encodeURIComponent(name)}&birth=${encodeURIComponent(cleanBirth)}`, {  
+            method: 'GET',  
+            mode: 'cors',  
+            redirect: 'follow'  
+        })  
+        .then(response => response.json())  
+        .then(data => {  
+            if (data.result === 'found') {  
+                messageDiv.innerText = '';  
+                displayUserInfo(data.data);  
+            } else if (data.result === 'multiple') {  
+                messageDiv.innerText = '';  
+                const addressListDiv = document.getElementById('addressList');  
+                addressListDiv.innerHTML = '';  
+                  
+                data.list.forEach((item, index) => {  
+                    const div = document.createElement('div');  
+                    div.className = 'address-item';  
+                    div.innerHTML = `<strong>주소 ${index + 1}:</strong> ${item.address}`;  
+                    div.onclick = function() {  
+                        displayUserInfo(item);  
+                    };  
+                    addressListDiv.appendChild(div);  
+                });  
+                  
+                document.getElementById('selectBox').classList.remove('hidden');  
+  
+            } else if (data.result === 'not_found') {  
+                messageDiv.style.color = 'red';  
+                messageDiv.innerText = '일치하는 회원 정보를 찾을 수 없습니다.';  
+            } else {  
+                messageDiv.style.color = 'red';  
+                messageDiv.innerText = '오류 발생: ' + data.error;  
+            }  
+        })  
+        .catch(error => {  
+            console.error('Error:', error);  
+            messageDiv.style.color = 'red';  
+            messageDiv.innerText = '조회 중 오류가 발생했습니다.';  
+        });  
+    }  
+  
+    function submitNew() {  
+        const name = document.getElementById('newName').value.trim();  
+        const rrn = document.getElementById('newRrn').value.trim();  
+        const address = document.getElementById('newAddress').value.trim();  
+        const messageDiv = document.getElementById('message');  
+  
+        if (!name || !rrn || !address) {  
+            alert('모든 항목을 입력해주세요.');  
+            return;  
+        }  
+  
+        let cleanRrn = rrn.replace(/[^0-9]/g, '');  
+        if (cleanRrn.length !== 13) {  
+            alert('주민등록번호 13자리를 올바르게 입력해주세요.');  
+            return;  
+        }  
+  
+        messageDiv.style.color = 'blue';  
+        messageDiv.innerText = '등록 중입니다...';  
+  
+        const payload = {  
+            action: 'register',  
+            name: name,  
+            rrn: cleanRrn,  
+            address: address  
+        };  
+  
         fetch(GAS_URL, {  
             method: 'POST',  
-            mode: 'cors',
+            mode: 'cors',  
             headers: { 'Content-Type': 'text/plain;charset=utf-8' },  
             redirect: 'follow',  
             body: JSON.stringify(payload)  
-        })
-        .then(response => response.json())
-        .then(data => {
-            const front6 = cleanRrn.substring(0, 6);
-
-            if (data.result === 'already_exists') {
-                switchMode('existing');
-                document.getElementById('exName').value = name;
-                document.getElementById('exBirth').value = front6;
-                
-                messageDiv.style.color = 'orange';
-                messageDiv.innerText = '이미 등록된 회원입니다. 기존 회원 정보로 이동합니다.';
-                displayUserInfo(data.data);
-
-            } else if (data.result === 'success') {
-                switchMode('existing');
-                document.getElementById('exName').value = name;
-                document.getElementById('exBirth').value = front6;
-
-                messageDiv.style.color = 'green';
-                messageDiv.innerText = '등록 완료! 신규 등록된 회원 정보입니다.';
-                displayUserInfo(data.data);
-
-            } else {
-                messageDiv.style.color = 'red';
-                messageDiv.innerText = '등록 실패: ' + data.error;
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            messageDiv.style.color = 'red';
-            messageDiv.innerText = '오류가 발생했습니다.';
-        });
-    }
-
-    // 출근 / 퇴근 처리
-    function recordWork(type) {
-        if (!currentUserData) {
-            alert('로그인 정보가 없습니다.');
-            return;
-        }
-
-        const messageDiv = document.getElementById('message');
-        messageDiv.style.color = 'blue';
-        messageDiv.innerText = `${type} 기록 중...`;
-
-        const payload = {
-            action: 'work',
-            name: currentUserData.name,
-            age: currentUserData.age,
-            rrn: currentUserData.rrn,
-            type: type
-        };
-
-        fetch(GAS_URL, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'text/plain;charset=utf-8'
-            },
-            redirect: 'follow',
-            body: JSON.stringify(payload)
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.result === 'success') {
-                let voiceMsg = (type === '출근') ? "안녕하세요 반갑습니다" : "수고하셨습니다. 안녕히가십시오";
-
-                speakText(voiceMsg, function() {
-                    resetToHome(`${type} 처리되었습니다.`);
-                });
-
-            } else {
-                messageDiv.style.color = 'red';
-                messageDiv.innerText = '기록 실패: ' + data.error;
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            messageDiv.style.color = 'red';
-            messageDiv.innerText = '오류가 발생했습니다.';
-        });
-    }
-</script>
-
-</body>
+        })  
+        .then(response => response.json())  
+        .then(data => {  
+            const front6 = cleanRrn.substring(0, 6);  
+  
+            if (data.result === 'already_exists') {  
+                switchMode('existing');  
+                document.getElementById('exName').value = name;  
+                document.getElementById('exBirth').value = front6;  
+                messageDiv.style.color = 'orange';  
+                messageDiv.innerText = '이미 등록된 회원입니다. 기존 회원 정보로 이동합니다.';  
+                displayUserInfo(data.data);  
+            } else if (data.result === 'success') {  
+                switchMode('existing');  
+                document.getElementById('exName').value = name;  
+                document.getElementById('exBirth').value = front6;  
+                messageDiv.style.color = 'green';  
+                messageDiv.innerText = '등록 완료! 신규 등록된 회원 정보입니다.';  
+                displayUserInfo(data.data);  
+            } else {  
+                messageDiv.style.color = 'red';  
+                messageDiv.innerText = '등록 실패: ' + data.error;  
+            }  
+        })  
+        .catch(error => {  
+            console.error('Error:', error);  
+            messageDiv.style.color = 'red';  
+            messageDiv.innerText = '오류가 발생했습니다.';  
+        });  
+    }  
+  
+    function recordWork(type) {  
+        if (!currentUserData) {  
+            alert('로그인 정보가 없습니다.');  
+            return;  
+        }  
+  
+        const messageDiv = document.getElementById('message');  
+        messageDiv.style.color = 'blue';  
+        messageDiv.innerText = `${type} 기록 중...`;  
+  
+        const payload = {  
+            action: 'work',  
+            name: currentUserData.name,  
+            age: currentUserData.age,  
+            rrn: currentUserData.rrn,  
+            type: type  
+        };  
+  
+        fetch(GAS_URL, {  
+            method: 'POST',  
+            mode: 'cors',  
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },  
+            redirect: 'follow',  
+            body: JSON.stringify(payload)  
+        })  
+        .then(response => response.json())  
+        .then(data => {  
+            if (data.result === 'success') {  
+                let voiceMsg = (type === '출근') ? "안녕하세요 반갑습니다" : "수고하셨습니다. 안녕히가십시오";  
+                speakText(voiceMsg, function() {  
+                    resetToHome(`${type} 처리되었습니다.`);  
+                });  
+            } else {  
+                messageDiv.style.color = 'red';  
+                messageDiv.innerText = '기록 실패: ' + data.error;  
+            }  
+        })  
+        .catch(error => {  
+            console.error('Error:', error);  
+            messageDiv.style.color = 'red';  
+            messageDiv.innerText = '오류가 발생했습니다.';  
+        });  
+    }  
+</script>  
+  
+</body>  
 </html>
