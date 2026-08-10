@@ -154,8 +154,8 @@
         <button type="button" id="tabNew" onclick="switchMode('new')">신규 회원</button>
     </div>
 
-    <!-- 기존 회원 인증 (onsubmit 방지 처리) -->
-    <form id="existingForm" onsubmit="handleExistingSubmit(event)">
+    <!-- 기존 회원 인증 (form 태그 대신 div 처리로 새로고침 완전 차단) -->
+    <div id="existingForm">
         <div class="form-group">
             <label for="exName">이름</label>
             <input type="text" id="exName" placeholder="홍길동" required>
@@ -164,11 +164,11 @@
             <label for="exBirth">생년월일 (6자리)</label>
             <input type="text" id="exBirth" placeholder="010101" maxlength="6" required>
         </div>
-        <button type="submit" class="submit-btn">회원 확인 및 데이터 조회</button>
-    </form>
+        <button type="button" class="submit-btn" onclick="submitExisting()">회원 확인 및 데이터 조회</button>
+    </div>
 
-    <!-- 신규 회원 등록 (onsubmit 방지 처리) -->
-    <form id="newForm" class="hidden" onsubmit="handleNewSubmit(event)">
+    <!-- 신규 회원 등록 -->
+    <div id="newForm" class="hidden">
         <div class="form-group">
             <label for="newName">이름</label>
             <input type="text" id="newName" placeholder="홍길동" required>
@@ -181,8 +181,8 @@
             <label for="newAddress">주소</label>
             <input type="text" id="newAddress" placeholder="서울특별시 강남구..." required>
         </div>
-        <button type="submit" class="submit-btn">등록하기</button>
-    </form>
+        <button type="button" class="submit-btn" onclick="submitNew()">등록하기</button>
+    </div>
 
     <div id="message"></div>
 
@@ -213,7 +213,6 @@
 </div>
 
 <script>
-    // 본인의 구글 앱스 스크립트 웹 앱 URL을 입력하세요.
     const GAS_URL = "https://script.google.com/macros/s/AKfycbwkgNl4-B0-AkW7eYacEfPWUlCujwo450qHfy9Fq4rR4K2skuktyyOu0GF8D0nUShJz/exec";
     let currentUserData = null;
 
@@ -238,8 +237,12 @@
     // 초기 화면 리셋
     function resetToHome(messageText) {
         currentUserData = null;
-        document.getElementById('existingForm').reset();
-        document.getElementById('newForm').reset();
+        document.getElementById('exName').value = '';
+        document.getElementById('exBirth').value = '';
+        document.getElementById('newName').value = '';
+        document.getElementById('newRrn').value = '';
+        document.getElementById('newAddress').value = '';
+        
         document.getElementById('resultBox').classList.add('hidden');
         document.getElementById('selectBox').classList.add('hidden');
         switchMode('existing');
@@ -282,17 +285,20 @@
         document.getElementById('resultBox').classList.remove('hidden');
     }
 
-    // 기존 회원 조회 처리 (기본 폼 제출 동작 완전 차단)
-    function handleExistingSubmit(e) {
-        if (e) e.preventDefault();
-
+    // 기존 회원 조회
+    function submitExisting() {
         const name = document.getElementById('exName').value.trim();
         const birth = document.getElementById('exBirth').value.trim();
         const messageDiv = document.getElementById('message');
 
+        if (!name || !birth) {
+            alert('이름과 생년월일을 모두 입력해주세요.');
+            return;
+        }
+
         if (birth.length !== 6 || isNaN(birth)) {
             alert('생년월일 6자리를 숫자만 올바르게 입력해주세요. (예: 010101)');
-            return false;
+            return;
         }
 
         messageDiv.style.color = 'blue';
@@ -339,23 +345,24 @@
             messageDiv.style.color = 'red';
             messageDiv.innerText = '조회 중 오류가 발생했습니다.';
         });
-
-        return false;
     }
 
-    // 신규 회원 등록 처리 (기본 폼 제출 동작 완전 차단)
-    function handleNewSubmit(e) {
-        if (e) e.preventDefault();
-
+    // 신규 회원 등록
+    function submitNew() {
         const name = document.getElementById('newName').value.trim();
         const rrn = document.getElementById('newRrn').value.trim();
         const address = document.getElementById('newAddress').value.trim();
         const messageDiv = document.getElementById('message');
 
+        if (!name || !rrn || !address) {
+            alert('모든 항목을 입력해주세요.');
+            return;
+        }
+
         const cleanRrn = rrn.replace('-', '');
         if (cleanRrn.length !== 13 || isNaN(cleanRrn)) {
             alert('주민등록번호 13자리를 올바르게 입력해주세요.');
-            return false;
+            return;
         }
 
         messageDiv.style.color = 'blue';
@@ -397,7 +404,6 @@
                 messageDiv.style.color = 'green';
                 messageDiv.innerText = '등록 완료! 신규 등록된 회원 정보입니다.';
                 displayUserInfo(data.data);
-                document.getElementById('newForm').reset();
 
             } else {
                 messageDiv.style.color = 'red';
@@ -409,8 +415,6 @@
             messageDiv.style.color = 'red';
             messageDiv.innerText = '오류가 발생했습니다.';
         });
-
-        return false;
     }
 
     // 출근 / 퇴근 처리
