@@ -305,10 +305,7 @@
             method: 'GET',
             redirect: 'follow'
         })
-        .then(response => {
-            if (!response.ok) throw new Error('네트워크 응답 에러');
-            return response.json();
-        })
+        .then(response => response.json())
         .then(data => {
             if (data.result === 'found') {
                 messageDiv.innerText = '';
@@ -335,7 +332,6 @@
             messageDiv.style.color = 'red';
             messageDiv.innerText = '조회 중 오류가 발생했습니다.';
         });
-
     // 신규 회원 등록 (text/plain 처리로 CORS 헤더 문제 차단)
     document.getElementById('newForm').addEventListener('submit', function(e) {
         e.preventDefault();
@@ -363,7 +359,7 @@
 
         fetch(GAS_URL, {
             method: 'POST',
-                headers: {
+            headers: {
                 'Content-Type': 'text/plain;charset=utf-8' // application/json 대용으로 preflight(OPTIONS) 차단 방지
             },
             redirect: 'follow',
