@@ -213,8 +213,8 @@
 </div>
 
 <script>
-    // 복사한 새 배포 URL을 아래에 넣으세요.
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbz_6vuz2iWVTynChKeAJj6yWNwku1TCBDqXfPfrGuUwx3n6qYASY1gboZeBKz88tNM2/exec";
+    // 배포 URL
+    const GAS_URL = "https://script.google.com/macros/s/AKfycby-xkvrF_fFc0Fz9nDfC_hNTW71ELkofKty-qYaGnIccpOW5jrcLd54ad2H1ZXkemzX/exec";
     let currentUserData = null;
 
     // 음성(TTS) 재생
@@ -361,7 +361,7 @@
             return;
         }
 
-        const cleanRrn = rrn.replace(/[^0-9]/g, '');
+        let cleanRrn = rrn.replace(/[^0-9]/g, '');
         if (cleanRrn.length !== 13) {
             alert('주민등록번호 13자리를 올바르게 입력해주세요.');
             return;
