@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>회원 서비스</title>
+    <title>회원 및 출퇴근 관리</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -76,6 +76,33 @@
         .submit-btn:hover {
             background-color: #45a049;
         }
+        .work-btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .btn-clock-in {
+            flex: 1;
+            padding: 12px;
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .btn-clock-out {
+            flex: 1;
+            padding: 12px;
+            background-color: #f44336;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            font-weight: bold;
+        }
         #message {
             margin-top: 15px;
             text-align: center;
@@ -102,13 +129,12 @@
 <div class="container">
     <h2>회원 서비스</h2>
     
-    <!-- 회원 유형 선택 버튼 -->
     <div class="btn-group">
         <button type="button" id="tabExisting" class="active" onclick="switchMode('existing')">기존 회원</button>
         <button type="button" id="tabNew" onclick="switchMode('new')">신규 회원</button>
     </div>
 
-    <!-- 기존 회원 조회 폼 -->
+    <!-- 기존 회원 인증 폼 -->
     <form id="existingForm">
         <div class="form-group">
             <label for="exName">이름</label>
@@ -118,7 +144,7 @@
             <label for="exRrn">주민등록번호</label>
             <input type="text" id="exRrn" placeholder="010101-3000000" maxlength="14" required>
         </div>
-        <button type="submit" class="submit-btn" id="exSubmitBtn">정보 조회하기</button>
+        <button type="submit" class="submit-btn">회원 확인 및 데이터 조회</button>
     </form>
 
     <!-- 신규 회원 등록 폼 -->
@@ -135,30 +161,38 @@
             <label for="newAddress">주소</label>
             <input type="text" id="newAddress" placeholder="서울특별시 강남구..." required>
         </div>
-        <button type="submit" class="submit-btn" id="newSubmitBtn">등록하기</button>
+        <button type="submit" class="submit-btn">등록하기</button>
     </form>
 
     <div id="message"></div>
 
-    <!-- 조회 결과 표시 영역 -->
+    <!-- 조회 결과 및 출퇴근 선택 영역 -->
     <div id="resultBox" class="result-box hidden">
-        <h3>회원 정보 조회 결과</h3>
+        <h3>회원 정보</h3>
         <p><strong>이름:</strong> <span id="resName"></span></p>
-        <p><strong>나이:</strong> <span id="resAge"></span>세 (2026년 기준)</p>
+        <p><strong>나이:</strong> <span id="resAge"></span>세</p>
         <p><strong>성별:</strong> <span id="resGender"></span></p>
         <p><strong>주민등록번호:</strong> <span id="resRrn"></span></p>
         <p><strong>주소:</strong> <span id="resAddress"></span></p>
+
+        <hr style="margin: 15px 0; border: 0; border-top: 1px solid #ccc;">
+
+        <h4 style="margin: 10px 0; text-align: center;">출/퇴근 등록</h4>
+        <div class="work-btn-group">
+            <button type="button" class="btn-clock-in" onclick="recordWork('출근')">출근하기</button>
+            <button type="button" class="btn-clock-out" onclick="recordWork('퇴근')">퇴근하기</button>
+        </div>
     </div>
 </div>
 
 <script>
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbwsb5QxpvX93MXgnAsGJgCk63ASIGYnfQzhKVq3FJsIx6YD4wVPgD8iuNv8UamG1F4D/exec";
-    let currentMode = 'existing';
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbwENP_vjrXr-wJj2YSlS_j92RgwLUhkGXoKVStIrs3rKpNTLCaWxv-RYhRNJxozbJ1J/exec";
+    let currentUserData = null;
 
     function switchMode(mode) {
-        currentMode = mode;
         document.getElementById('message').innerText = '';
         document.getElementById('resultBox').classList.add('hidden');
+        currentUserData = null;
 
         if (mode === 'existing') {
             document.getElementById('tabExisting').classList.add('active');
@@ -173,36 +207,35 @@
         }
     }
 
-    // 기존 회원 정보 조회
+    // 회원 데이터 화면 표시
+    function displayUserInfo(data) {
+        currentUserData = data;
+        document.getElementById('resName').innerText = data.name;
+        document.getElementById('resAge').innerText = data.age;
+        document.getElementById('resGender').innerText = data.gender;
+        document.getElementById('resRrn').innerText = data.rrn;
+        document.getElementById('resAddress').innerText = data.address;
+        document.getElementById('resultBox').classList.remove('hidden');
+    }
+
+    // 기존 회원 로그인 및 데이터 조회
     document.getElementById('existingForm').addEventListener('submit', function(e) {
         e.preventDefault();
 
         const name = document.getElementById('exName').value.trim();
         const rrn = document.getElementById('exRrn').value.trim();
         const messageDiv = document.getElementById('message');
-        const resultBox = document.getElementById('resultBox');
-
-        const cleanRrn = rrn.replace('-', '');
-        if (cleanRrn.length !== 13 || isNaN(cleanRrn)) {
-            alert('주민등록번호 13자리를 올바르게 입력해주세요.');
-            return;
-        }
 
         messageDiv.style.color = 'blue';
         messageDiv.innerText = '정보 조회 중...';
-        resultBox.classList.add('hidden');
+        document.getElementById('resultBox').classList.add('hidden');
 
         fetch(`${GAS_URL}?name=${encodeURIComponent(name)}&rrn=${encodeURIComponent(rrn)}`)
         .then(response => response.json())
         .then(data => {
             if (data.result === 'found') {
                 messageDiv.innerText = '';
-                document.getElementById('resName').innerText = data.data.name;
-                document.getElementById('resAge').innerText = data.data.age;
-                document.getElementById('resGender').innerText = data.data.gender;
-                document.getElementById('resRrn').innerText = data.data.rrn;
-                document.getElementById('resAddress').innerText = data.data.address;
-                resultBox.classList.remove('hidden');
+                displayUserInfo(data.data);
             } else if (data.result === 'not_found') {
                 messageDiv.style.color = 'red';
                 messageDiv.innerText = '일치하는 회원 정보를 찾을 수 없습니다.';
@@ -218,7 +251,7 @@
         });
     });
 
-    // 신규 회원 등록
+    // 신규 회원 등록 및 중복 체크
     document.getElementById('newForm').addEventListener('submit', function(e) {
         e.preventDefault();
 
@@ -227,16 +260,11 @@
         const address = document.getElementById('newAddress').value.trim();
         const messageDiv = document.getElementById('message');
 
-        const cleanRrn = rrn.replace('-', '');
-        if (cleanRrn.length !== 13 || isNaN(cleanRrn)) {
-            alert('주민등록번호 13자리를 올바르게 입력해주세요.');
-            return;
-        }
-
         messageDiv.style.color = 'blue';
-        messageDiv.innerText = '저장 중입니다...';
+        messageDiv.innerText = '확인 중입니다...';
 
         const payload = {
+            action: 'register',
             name: name,
             rrn: rrn,
             address: address
@@ -249,10 +277,27 @@
         })
         .then(response => response.json())
         .then(data => {
-            if (data.result === 'success') {
+            if (data.result === 'already_exists') {
+                // 이미가입된 회원인 경우: 기존 회원 탭으로 전환 후 데이터 자동 입력/표시
+                switchMode('existing');
+                document.getElementById('exName').value = name;
+                document.getElementById('exRrn').value = rrn;
+                
+                messageDiv.style.color = 'orange';
+                messageDiv.innerText = '이미 등록된 회원입니다. 기존 회원 정보로 이동합니다.';
+                displayUserInfo(data.data);
+
+            } else if (data.result === 'success') {
+                // 신규 가입 성공시: 기존 회원 탭으로 이동하여 가입된 정보 자동 표시
+                switchMode('existing');
+                document.getElementById('exName').value = name;
+                document.getElementById('exRrn').value = rrn;
+
                 messageDiv.style.color = 'green';
-                messageDiv.innerText = '성공적으로 등록되었습니다!';
+                messageDiv.innerText = '등록 완료! 회원 정보가 불러와졌습니다.';
+                displayUserInfo(data.data);
                 document.getElementById('newForm').reset();
+
             } else {
                 messageDiv.style.color = 'red';
                 messageDiv.innerText = '등록 실패: ' + data.error;
@@ -264,6 +309,47 @@
             messageDiv.innerText = '오류가 발생했습니다.';
         });
     });
+
+    // 출근 / 퇴근 버튼 전송
+    function recordWork(type) {
+        if (!currentUserData) {
+            alert('로그인 정보가 없습니다.');
+            return;
+        }
+
+        const messageDiv = document.getElementById('message');
+        messageDiv.style.color = 'blue';
+        messageDiv.innerText = `${type} 기록 중...`;
+
+        const payload = {
+            action: 'work',
+            name: currentUserData.name,
+            age: currentUserData.age,
+            rrn: currentUserData.rrn,
+            type: type
+        };
+
+        fetch(GAS_URL, {
+            method: 'POST',
+            contentType: 'application/json',
+            body: JSON.stringify(payload)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.result === 'success') {
+                messageDiv.style.color = 'green';
+                messageDiv.innerText = `${type} 기록이 완료되었습니다!`;
+            } else {
+                messageDiv.style.color = 'red';
+                messageDiv.innerText = '기록 실패: ' + data.error;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            messageDiv.style.color = 'red';
+            messageDiv.innerText = '오류가 발생했습니다.';
+        });
+    }
 </script>
 
 </body>
