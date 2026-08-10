@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>회원 서비스</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            width: 380px;
+        }
+        h2 {
+            margin-bottom: 20px;
+            color: #333;
+            text-align: center;
+        }
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .btn-group button {
+            flex: 1;
+            padding: 12px;
+            font-size: 15px;
+            border: 1px solid #4CAF50;
+            background-color: white;
+            color: #4CAF50;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .btn-group button.active {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .submit-btn {
+            width: 100%;
+            padding: 12px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .submit-btn:hover {
+            background-color: #45a049;
+        }
+        #message {
+            margin-top: 15px;
+            text-align: center;
+            font-weight: bold;
+        }
+        .result-box {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #eef7ee;
+            border: 1px solid #c3e6c3;
+            border-radius: 4px;
+        }
+        .result-box p {
+            margin: 8px 0;
+            color: #333;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>회원 서비스</h2>
+    
+    <!-- 회원 유형 선택 버튼 -->
+    <div class="btn-group">
+        <button type="button" id="tabExisting" class="active" onclick="switchMode('existing')">기존 회원</button>
+        <button type="button" id="tabNew" onclick="switchMode('new')">신규 회원</button>
+    </div>
+
+    <!-- 기존 회원 조회 폼 -->
+    <form id="existingForm">
+        <div class="form-group">
+            <label for="exName">이름</label>
+            <input type="text" id="exName" placeholder="홍길동" required>
+        </div>
+        <div class="form-group">
+            <label for="exRrn">주민등록번호</label>
+            <input type="text" id="exRrn" placeholder="010101-3000000" maxlength="14" required>
+        </div>
+        <button type="submit" class="submit-btn" id="exSubmitBtn">정보 조회하기</button>
+    </form>
+
+    <!-- 신규 회원 등록 폼 -->
+    <form id="newForm" class="hidden">
+        <div class="form-group">
+            <label for="newName">이름</label>
+            <input type="text" id="newName" placeholder="홍길동" required>
+        </div>
+        <div class="form-group">
+            <label for="newRrn">주민등록번호</label>
+            <input type="text" id="newRrn" placeholder="010101-3000000" maxlength="14" required>
+        </div>
+        <div class="form-group">
+            <label for="newAddress">주소</label>
+            <input type="text" id="newAddress" placeholder="서울특별시 강남구..." required>
+        </div>
+        <button type="submit" class="submit-btn" id="newSubmitBtn">등록하기</button>
+    </form>
+
+    <div id="message"></div>
+
+    <!-- 조회 결과 표시 영역 -->
+    <div id="resultBox" class="result-box hidden">
+        <h3>회원 정보 조회 결과</h3>
+        <p><strong>이름:</strong> <span id="resName"></span></p>
+        <p><strong>나이:</strong> <span id="resAge"></span>세 (2026년 기준)</p>
+        <p><strong>성별:</strong> <span id="resGender"></span></p>
+        <p><strong>주민등록번호:</strong> <span id="resRrn"></span></p>
+        <p><strong>주소:</strong> <span id="resAddress"></span></p>
+    </div>
+</div>
+
+<script>
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbwsb5QxpvX93MXgnAsGJgCk63ASIGYnfQzhKVq3FJsIx6YD4wVPgD8iuNv8UamG1F4D/exec";
+    let currentMode = 'existing';
+
+    function switchMode(mode) {
+        currentMode = mode;
+        document.getElementById('message').innerText = '';
+        document.getElementById('resultBox').classList.add('hidden');
+
+        if (mode === 'existing') {
+            document.getElementById('tabExisting').classList.add('active');
+            document.getElementById('tabNew').classList.remove('active');
+            document.getElementById('existingForm').classList.remove('hidden');
+            document.getElementById('newForm').classList.add('hidden');
+        } else {
+            document.getElementById('tabNew').classList.add('active');
+            document.getElementById('tabExisting').classList.remove('active');
+            document.getElementById('newForm').classList.remove('hidden');
+            document.getElementById('existingForm').classList.add('hidden');
+        }
+    }
+
+    // 기존 회원 정보 조회
+    document.getElementById('existingForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const name = document.getElementById('exName').value.trim();
+        const rrn = document.getElementById('exRrn').value.trim();
+        const messageDiv = document.getElementById('message');
+        const resultBox = document.getElementById('resultBox');
+
+        const cleanRrn = rrn.replace('-', '');
+        if (cleanRrn.length !== 13 || isNaN(cleanRrn)) {
+            alert('주민등록번호 13자리를 올바르게 입력해주세요.');
+            return;
+        }
+
+        messageDiv.style.color = 'blue';
+        messageDiv.innerText = '정보 조회 중...';
+        resultBox.classList.add('hidden');
+
+        fetch(`${GAS_URL}?name=${encodeURIComponent(name)}&rrn=${encodeURIComponent(rrn)}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.result === 'found') {
+                messageDiv.innerText = '';
+                document.getElementById('resName').innerText = data.data.name;
+                document.getElementById('resAge').innerText = data.data.age;
+                document.getElementById('resGender').innerText = data.data.gender;
+                document.getElementById('resRrn').innerText = data.data.rrn;
+                document.getElementById('resAddress').innerText = data.data.address;
+                resultBox.classList.remove('hidden');
+            } else if (data.result === 'not_found') {
+                messageDiv.style.color = 'red';
+                messageDiv.innerText = '일치하는 회원 정보를 찾을 수 없습니다.';
+            } else {
+                messageDiv.style.color = 'red';
+                messageDiv.innerText = '오류 발생: ' + data.error;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            messageDiv.style.color = 'red';
+            messageDiv.innerText = '조회 중 오류가 발생했습니다.';
+        });
+    });
+
+    // 신규 회원 등록
+    document.getElementById('newForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const name = document.getElementById('newName').value.trim();
+        const rrn = document.getElementById('newRrn').value.trim();
+        const address = document.getElementById('newAddress').value.trim();
+        const messageDiv = document.getElementById('message');
+
+        const cleanRrn = rrn.replace('-', '');
+        if (cleanRrn.length !== 13 || isNaN(cleanRrn)) {
+            alert('주민등록번호 13자리를 올바르게 입력해주세요.');
+            return;
+        }
+
+        messageDiv.style.color = 'blue';
+        messageDiv.innerText = '저장 중입니다...';
+
+        const payload = {
+            name: name,
+            rrn: rrn,
+            address: address
+        };
+
+        fetch(GAS_URL, {
+            method: 'POST',
+            contentType: 'application/json',
+            body: JSON.stringify(payload)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.result === 'success') {
+                messageDiv.style.color = 'green';
+                messageDiv.innerText = '성공적으로 등록되었습니다!';
+                document.getElementById('newForm').reset();
+            } else {
+                messageDiv.style.color = 'red';
+                messageDiv.innerText = '등록 실패: ' + data.error;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            messageDiv.style.color = 'red';
+            messageDiv.innerText = '오류가 발생했습니다.';
+        });
+    });
+</script>
+
+</body>
+</html>
