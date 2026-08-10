@@ -154,8 +154,8 @@
         <button type="button" id="tabNew" onclick="switchMode('new')">신규 회원</button>
     </div>
 
-    <!-- 기존 회원 인증 폼 -->
-    <form id="existingForm">
+    <!-- 기존 회원 인증 (onsubmit 방지 처리) -->
+    <form id="existingForm" onsubmit="handleExistingSubmit(event)">
         <div class="form-group">
             <label for="exName">이름</label>
             <input type="text" id="exName" placeholder="홍길동" required>
@@ -167,8 +167,8 @@
         <button type="submit" class="submit-btn">회원 확인 및 데이터 조회</button>
     </form>
 
-    <!-- 신규 회원 등록 폼 -->
-    <form id="newForm" class="hidden">
+    <!-- 신규 회원 등록 (onsubmit 방지 처리) -->
+    <form id="newForm" class="hidden" onsubmit="handleNewSubmit(event)">
         <div class="form-group">
             <label for="newName">이름</label>
             <input type="text" id="newName" placeholder="홍길동" required>
@@ -213,10 +213,11 @@
 </div>
 
 <script>
+    // 본인의 구글 앱스 스크립트 웹 앱 URL을 입력하세요.
     const GAS_URL = "https://script.google.com/macros/s/AKfycbwkgNl4-B0-AkW7eYacEfPWUlCujwo450qHfy9Fq4rR4K2skuktyyOu0GF8D0nUShJz/exec";
     let currentUserData = null;
 
-    // 음성(TTS) 재생 함수
+    // 음성(TTS) 재생
     function speakText(text, callback) {
         if ('speechSynthesis' in window) {
             window.speechSynthesis.cancel();
@@ -228,7 +229,6 @@
                 utterance.onend = callback;
                 utterance.onerror = callback;
             }
-            
             window.speechSynthesis.speak(utterance);
         } else {
             if (callback) callback();
@@ -270,7 +270,6 @@
         }
     }
 
-    // 단일 회원 정보 화면 표시
     function displayUserInfo(data) {
         currentUserData = data;
         document.getElementById('resName').innerText = data.name;
@@ -283,9 +282,9 @@
         document.getElementById('resultBox').classList.remove('hidden');
     }
 
-    // 기존 회원 조회
-    document.getElementById('existingForm').addEventListener('submit', function(e) {
-        e.preventDefault();
+    // 기존 회원 조회 처리 (기본 폼 제출 동작 완전 차단)
+    function handleExistingSubmit(e) {
+        if (e) e.preventDefault();
 
         const name = document.getElementById('exName').value.trim();
         const birth = document.getElementById('exBirth').value.trim();
@@ -293,7 +292,7 @@
 
         if (birth.length !== 6 || isNaN(birth)) {
             alert('생년월일 6자리를 숫자만 올바르게 입력해주세요. (예: 010101)');
-            return;
+            return false;
         }
 
         messageDiv.style.color = 'blue';
@@ -314,17 +313,25 @@
                 messageDiv.innerText = '';
                 const addressListDiv = document.getElementById('addressList');
                 addressListDiv.innerHTML = '';
+                
                 data.list.forEach((item, index) => {
                     const div = document.createElement('div');
                     div.className = 'address-item';
                     div.innerHTML = `<strong>주소 ${index + 1}:</strong> ${item.address}`;
-                    div.onclick = function() { displayUserInfo(item); };
+                    div.onclick = function() {
+                        displayUserInfo(item);
+                    };
                     addressListDiv.appendChild(div);
                 });
+                
                 document.getElementById('selectBox').classList.remove('hidden');
+
             } else if (data.result === 'not_found') {
                 messageDiv.style.color = 'red';
                 messageDiv.innerText = '일치하는 회원 정보를 찾을 수 없습니다.';
+            } else {
+                messageDiv.style.color = 'red';
+                messageDiv.innerText = '오류 발생: ' + data.error;
             }
         })
         .catch(error => {
@@ -332,9 +339,13 @@
             messageDiv.style.color = 'red';
             messageDiv.innerText = '조회 중 오류가 발생했습니다.';
         });
-    // 신규 회원 등록 (text/plain 처리로 CORS 헤더 문제 차단)
-    document.getElementById('newForm').addEventListener('submit', function(e) {
-        e.preventDefault();
+
+        return false;
+    }
+
+    // 신규 회원 등록 처리 (기본 폼 제출 동작 완전 차단)
+    function handleNewSubmit(e) {
+        if (e) e.preventDefault();
 
         const name = document.getElementById('newName').value.trim();
         const rrn = document.getElementById('newRrn').value.trim();
@@ -344,7 +355,7 @@
         const cleanRrn = rrn.replace('-', '');
         if (cleanRrn.length !== 13 || isNaN(cleanRrn)) {
             alert('주민등록번호 13자리를 올바르게 입력해주세요.');
-            return;
+            return false;
         }
 
         messageDiv.style.color = 'blue';
@@ -360,7 +371,7 @@
         fetch(GAS_URL, {
             method: 'POST',
             headers: {
-                'Content-Type': 'text/plain;charset=utf-8' // application/json 대용으로 preflight(OPTIONS) 차단 방지
+                'Content-Type': 'text/plain;charset=utf-8'
             },
             redirect: 'follow',
             body: JSON.stringify(payload)
@@ -399,6 +410,9 @@
             messageDiv.innerText = '오류가 발생했습니다.';
         });
 
+        return false;
+    }
+
     // 출근 / 퇴근 처리
     function recordWork(type) {
         if (!currentUserData) {
@@ -423,6 +437,7 @@
             headers: {
                 'Content-Type': 'text/plain;charset=utf-8'
             },
+            redirect: 'follow',
             body: JSON.stringify(payload)
         })
         .then(response => response.json())
