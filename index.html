@@ -92,8 +92,8 @@
 </div>
 
 <script>
-    // ★ 본인의 Google Apps Script 웹 앱 URL 배포 주소 입력 ★
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbwGQv71hdrdcJUTzoIa4dpU7HAstmV4KHsI0RpD645N1APwSoCmCsuAwPdTxbLpyvOY/exec"; 
+    // ★ 본인의 Apps Script 웹 앱 URL 주소 설정 ★
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbyGYbcv-aiBGLVSZOEkpGJG1FD1_ln8AnKmrIAJKTQvVFM45dY-dBOUMxCA9MrPglAd/exec"; 
 
     let currentUserData = null;
 
@@ -126,7 +126,7 @@
         form.submit();
         document.body.removeChild(form);
 
-        if (callback) setTimeout(callback, 1500);
+        if (callback) setTimeout(callback, 1200);
     }
 
     function speakText(text, callback) {  
@@ -298,10 +298,9 @@
         };  
 
         sendDataViaForm(payload, function() {
-            switchMode('existing');
             displayUserInfo(userInfo);
             messageDiv.style.color = 'green';
-            messageDiv.innerText = '등록 완료! 바로 출근/퇴근 버튼을 누르실 수 있습니다.';
+            messageDiv.innerText = '등록 완료! 아래 출근 또는 퇴근 버튼을 누르시면 기록됩니다.';
         });
     }  
 
@@ -320,6 +319,7 @@
             name: currentUserData.name,  
             age: currentUserData.age,  
             rrn: currentUserData.rrn,  
+            address: currentUserData.address,
             type: type  
         };  
 
