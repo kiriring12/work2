@@ -5,164 +5,29 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>회원 및 출퇴근 관리 시스템</title>
     <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
-        }
-
-        body {
-            background-color: #f4f6f8;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            padding: 20px;
-        }
-
-        .container {
-            background: #ffffff;
-            width: 100%;
-            max-width: 480px;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-        }
-
-        h2 {
-            text-align: center;
-            margin-bottom: 24px;
-            color: #222222;
-        }
-
-        .tab-group {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-
-        .tab-btn {
-            flex: 1;
-            padding: 12px;
-            border: 1px solid #4CAF50;
-            background-color: #ffffff;
-            color: #4CAF50;
-            font-weight: bold;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .tab-btn.active {
-            background-color: #4CAF50;
-            color: #ffffff;
-        }
-
-        .form-group {
-            margin-bottom: 16px;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 6px;
-            font-weight: 600;
-            color: #444444;
-            font-size: 14px;
-        }
-
-        input {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #dcdfe6;
-            border-radius: 6px;
-            font-size: 15px;
-            background-color: #eef4ff;
-            outline: none;
-        }
-
-        input:focus {
-            border-color: #4CAF50;
-            background-color: #ffffff;
-        }
-
-        .submit-btn {
-            width: 100%;
-            padding: 14px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 10px;
-        }
-
-        .submit-btn:hover {
-            background-color: #45a049;
-        }
-
-        .hidden {
-            display: none !important;
-        }
-
-        #message {
-            margin-top: 15px;
-            text-align: center;
-            font-weight: bold;
-            font-size: 15px;
-            min-height: 22px;
-        }
-
-        .info-card {
-            background-color: #f8f9fa;
-            border: 1px solid #e9ecef;
-            border-radius: 8px;
-            padding: 16px;
-            margin-top: 20px;
-        }
-
-        .info-row {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 8px;
-            font-size: 14px;
-        }
-
-        .btn-group {
-            display: flex;
-            gap: 10px;
-            margin-top: 15px;
-        }
-
-        .work-btn {
-            flex: 1;
-            padding: 12px;
-            border: none;
-            border-radius: 6px;
-            color: white;
-            font-weight: bold;
-            cursor: pointer;
-            font-size: 15px;
-        }
-
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Pretendard', -apple-system, sans-serif; }
+        body { background-color: #f4f6f8; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
+        .container { background: #ffffff; width: 100%; max-width: 480px; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+        h2 { text-align: center; margin-bottom: 24px; color: #222; }
+        .tab-group { display: flex; gap: 10px; margin-bottom: 20px; }
+        .tab-btn { flex: 1; padding: 12px; border: 1px solid #4CAF50; background: #fff; color: #4CAF50; font-weight: bold; border-radius: 6px; cursor: pointer; }
+        .tab-btn.active { background: #4CAF50; color: #fff; }
+        .form-group { margin-bottom: 16px; }
+        label { display: block; margin-bottom: 6px; font-weight: 600; color: #444; font-size: 14px; }
+        input { width: 100%; padding: 12px; border: 1px solid #dcdfe6; border-radius: 6px; font-size: 15px; background-color: #eef4ff; outline: none; }
+        input:focus { border-color: #4CAF50; background-color: #fff; }
+        .submit-btn { width: 100%; padding: 14px; background-color: #4CAF50; color: white; border: none; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .submit-btn:hover { background-color: #45a049; }
+        .hidden { display: none !important; }
+        #message { margin-top: 15px; text-align: center; font-weight: bold; font-size: 15px; min-height: 22px; }
+        .info-card { background-color: #f8f9fa; border: 1px solid #e9ecef; border-radius: 8px; padding: 16px; margin-top: 20px; }
+        .info-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; }
+        .btn-group { display: flex; gap: 10px; margin-top: 15px; }
+        .work-btn { flex: 1; padding: 12px; border: none; border-radius: 6px; color: white; font-weight: bold; cursor: pointer; font-size: 15px; }
         .btn-in { background-color: #2196F3; }
         .btn-out { background-color: #ff9800; }
-
-        .address-item {
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            margin-top: 8px;
-            cursor: pointer;
-            background-color: #fff;
-            transition: background-color 0.2s;
-        }
-
-        .address-item:hover {
-            background-color: #eef4ff;
-        }
+        .address-item { padding: 12px; border: 1px solid #ddd; border-radius: 6px; margin-top: 8px; cursor: pointer; background-color: #fff; }
+        .address-item:hover { background-color: #eef4ff; }
     </style>
 </head>
 <body>
@@ -170,13 +35,12 @@
 <div class="container">
     <h2>회원 서비스</h2>
 
-    <!-- 탭 버튼 -->
     <div class="tab-group">
         <button id="tabExisting" class="tab-btn active" onclick="switchMode('existing')">기존 회원</button>
         <button id="tabNew" class="tab-btn" onclick="switchMode('new')">신규 회원</button>
     </div>
 
-    <!-- 기존 회원 조회 폼 -->
+    <!-- 기존 회원 Form -->
     <div id="existingForm">
         <div class="form-group">
             <label>이름</label>
@@ -189,7 +53,7 @@
         <button class="submit-btn" onclick="submitExisting()">조회하기</button>
     </div>
 
-    <!-- 신규 회원 등록 폼 -->
+    <!-- 신규 회원 Form -->
     <div id="newForm" class="hidden">
         <div class="form-group">
             <label>이름</label>
@@ -206,16 +70,13 @@
         <button class="submit-btn" onclick="submitNew()">등록하기</button>
     </div>
 
-    <!-- 메시지 출력 영역 -->
     <div id="message"></div>
 
-    <!-- 동명이인 주소 선택 영역 -->
     <div id="selectBox" class="hidden">
         <p style="font-weight: bold; margin-top: 15px; margin-bottom: 5px;">동일 이름/생일 정보가 있습니다. 주소를 선택하세요:</p>
         <div id="addressList"></div>
     </div>
 
-    <!-- 회원 정보 및 출퇴근 버튼 영역 -->
     <div id="resultBox" class="info-card hidden">
         <div class="info-row"><span>이름:</span> <strong id="resName"></strong></div>
         <div class="info-row"><span>나이:</span> <strong id="resAge"></strong></div>
@@ -231,12 +92,11 @@
 </div>
 
 <script>
-    // ★ 본인의 Apps Script 웹 앱 URL 주소를 넣어주세요. ★
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbz4o1LxeCYFlSKT5XISWAad1yQuHZclZKIsMTaVrHXcvT1fmXq_JWY9mB_OLtBQH6gw/exec"; 
+    // ★ 본인의 Google Apps Script 웹 앱 URL 배포 주소 입력 ★
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbwGQv71hdrdcJUTzoIa4dpU7HAstmV4KHsI0RpD645N1APwSoCmCsuAwPdTxbLpyvOY/exec"; 
 
     let currentUserData = null;
 
-    // 히든 iframe을 통한 안전한 Form POST 전송
     function sendDataViaForm(data, callback) {
         let iframe = document.getElementById('hidden_iframe');
         if (!iframe) {
@@ -269,7 +129,6 @@
         if (callback) setTimeout(callback, 1500);
     }
 
-    // 음성 출력
     function speakText(text, callback) {  
         if ('speechSynthesis' in window) {  
             window.speechSynthesis.cancel();  
@@ -336,7 +195,6 @@
         document.getElementById('resultBox').classList.remove('hidden');  
     }  
 
-    // 기존 회원 조회
     function submitExisting() {  
         const name = document.getElementById('exName').value.trim();  
         const birth = document.getElementById('exBirth').value.trim();  
@@ -373,9 +231,7 @@
                     const div = document.createElement('div');  
                     div.className = 'address-item';  
                     div.innerHTML = `<strong>${item.name} (${item.birth})</strong> - ${item.address}`;  
-                    div.onclick = function() {  
-                        displayUserInfo(item);  
-                    };  
+                    div.onclick = function() { displayUserInfo(item); };  
                     addressListDiv.appendChild(div);  
                 });  
                   
@@ -396,7 +252,6 @@
         });  
     }  
 
-    // 신규 회원 등록
     function submitNew() {  
         const name = document.getElementById('newName').value.trim();  
         const rrn = document.getElementById('newRrn').value.trim();  
@@ -424,10 +279,11 @@
         const currentYear = new Date().getFullYear();
         const age = currentYear - birthYear;
         const gender = (genderDigit === '1' || genderDigit === '3' || genderDigit === '5' || genderDigit === '7') ? '♂' : '♀';
+        const maskedRrn = front6 + '-' + genderDigit + '******';
 
         const userInfo = {
             name: name,
-            rrn: cleanRrn,
+            rrn: maskedRrn,
             birth: front6,
             address: address,
             age: age,
@@ -445,14 +301,13 @@
             switchMode('existing');
             displayUserInfo(userInfo);
             messageDiv.style.color = 'green';
-            messageDiv.innerText = '등록 완료! 바로 출근 버튼을 누르실 수 있습니다.';
+            messageDiv.innerText = '등록 완료! 바로 출근/퇴근 버튼을 누르실 수 있습니다.';
         });
     }  
 
-    // 출퇴근 버튼 클릭 (이름, 나이, 주민번호 데이터 확실히 전달)
     function recordWork(type) {  
         if (!currentUserData) {  
-            alert('로그인 정보가 없습니다.');  
+            alert('회원 정보가 선택되지 않았습니다.');  
             return;  
         }  
 
