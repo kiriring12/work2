@@ -189,7 +189,7 @@
         <button class="submit-btn" onclick="submitExisting()">조회하기</button>
     </div>
 
-    <!-- 신규 회원 등록 폼 -->
+    <!-- 신규 회원 등록 폼 (조건 2: 이름, 주민등록번호, 주소만 입력) -->
     <div id="newForm" class="hidden">
         <div class="form-group">
             <label>이름</label>
@@ -209,13 +209,13 @@
     <!-- 메시지 출력 영역 -->
     <div id="message"></div>
 
-    <!-- 동명이인 주소 선택 영역 -->
+    <!-- 동명이인 주소 선택 영역 (조건 12) -->
     <div id="selectBox" class="hidden">
         <p style="font-weight: bold; margin-top: 15px; margin-bottom: 5px;">동일 이름/생일 정보가 있습니다. 주소를 선택하세요:</p>
         <div id="addressList"></div>
     </div>
 
-    <!-- 회원 정보 및 출퇴근 버튼 영역 -->
+    <!-- 회원 정보 및 출퇴근 버튼 영역 (조건 3: 이름, 나이, 성별, 생일, 주소 표기) -->
     <div id="resultBox" class="info-card hidden">
         <div class="info-row"><span>이름:</span> <strong id="resName"></strong></div>
         <div class="info-row"><span>나이:</span> <strong id="resAge"></strong></div>
@@ -231,12 +231,12 @@
 </div>
 
 <script>
-    // 본인의 Apps Script 웹 앱 URL 주소를 꼭 확인 후 입력해주세요.
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbyNNhQSJ9WgTiYpTmppg3wST1N5qEG1gPDz7__N_fv9O62OzOo2YoomPMnb3aWUVSpE/exec"; 
+    // ★ 본인의 Apps Script 웹 앱 URL 주소를 넣어주세요. ★
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbyK36f4uIVspf20yRxDR0uzeRFzHq8ZkiAw0RDKQjuMlSstnztws9BlUM7YE50YkjL3/exec"; 
 
     let currentUserData = null;
 
-    // CORS 우회용 Form 전송 함수
+    // CORS 정책 우회용 Form 전송 함수
     function sendDataViaForm(data, callback) {
         let iframe = document.getElementById('hidden_iframe');
         if (!iframe) {
@@ -265,7 +265,7 @@
         if (callback) setTimeout(callback, 1200);
     }
 
-    // 음성 출력
+    // 음성 출력 함수 (조건 5)
     function speakText(text, callback) {  
         if ('speechSynthesis' in window) {  
             window.speechSynthesis.cancel();  
@@ -438,6 +438,7 @@
         };  
 
         sendDataViaForm(payload, function() {
+            // 신규 등록 후 기존회원 화면으로 전화되어 출근 준비 (조건 4)
             switchMode('existing');
             displayUserInfo(userInfo);
             messageDiv.style.color = 'green';
