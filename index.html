@@ -97,12 +97,11 @@
 </div>
 
 <script>
-    // ★ 본인의 Google Apps Script 배포 URL 주소를 넣으세요 ★
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbzwOuANa_obshAqC0gSnX1JH1bpPYLQjqt-jANtRFkk8-tCB4cUytOURBBVEJktHNvS/exec"; 
+    // Google Apps Script 배포 URL 주소
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbwCImbzzZwKLuKXTlgrYjUer_gsIdQCmPiPdkniMieCwjmArlY5p6uQpOHRt_LggEO7/exec"; 
 
     let currentUserData = null;
 
-    // ★ 브라우저 보안 차단을 회피하는 100% 신뢰 fetch 통신 방식 ★
     function sendDataViaFetch(data, callback) {
         const urlParams = new URLSearchParams();
         for (let key in data) {
@@ -220,7 +219,6 @@
                 messageDiv.innerText = '';  
                 displayUserInfo(data.data);  
             } else if (data.result === 'multiple') {  
-                // 동명이인 + 생일 일치 항목 출력
                 messageDiv.innerText = '';  
                 const addressListDiv = document.getElementById('addressList');  
                 addressListDiv.innerHTML = '';  
