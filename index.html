@@ -301,7 +301,10 @@
         document.getElementById('resultBox').classList.add('hidden');
         document.getElementById('selectBox').classList.add('hidden');
 
-        fetch(`${GAS_URL}?name=${encodeURIComponent(name)}&birth=${encodeURIComponent(birth)}`)
+        fetch(`${GAS_URL}?name=${encodeURIComponent(name)}&birth=${encodeURIComponent(birth)}`, {
+            method: 'GET',
+            redirect: 'follow'
+        })
         .then(response => response.json())
         .then(data => {
             if (data.result === 'found') {
