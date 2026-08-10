@@ -119,6 +119,26 @@
             margin: 8px 0;
             color: #333;
         }
+        .select-box {
+            margin-top: 15px;
+            padding: 15px;
+            background-color: #fff9e6;
+            border: 1px solid #ffe0b2;
+            border-radius: 4px;
+        }
+        .address-item {
+            padding: 10px;
+            margin-top: 8px;
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .address-item:hover {
+            background-color: #f0f0f0;
+            border-color: #4CAF50;
+        }
         .hidden {
             display: none;
         }
@@ -141,8 +161,8 @@
             <input type="text" id="exName" placeholder="홍길동" required>
         </div>
         <div class="form-group">
-            <label for="exRrn">주민등록번호</label>
-            <input type="text" id="exRrn" placeholder="010101-3000000" maxlength="14" required>
+            <label for="exBirth">생년월일 (6자리)</label>
+            <input type="text" id="exBirth" placeholder="010101" maxlength="6" required>
         </div>
         <button type="submit" class="submit-btn">회원 확인 및 데이터 조회</button>
     </form>
@@ -166,6 +186,13 @@
 
     <div id="message"></div>
 
+    <!-- 동명이인 선택 영역 -->
+    <div id="selectBox" class="select-box hidden">
+        <h4 style="margin: 0 0 10px 0; color: #d97706; text-align: center;">동명이인이 존재합니다.</h4>
+        <p style="margin: 0 0 10px 0; font-size: 14px; text-align: center; color: #555;">본인의 주소를 선택해 주세요.</p>
+        <div id="addressList"></div>
+    </div>
+
     <!-- 조회 결과 및 출퇴근 선택 영역 -->
     <div id="resultBox" class="result-box hidden">
         <h3>회원 정보</h3>
@@ -186,13 +213,13 @@
 </div>
 
 <script>
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbx9VSbfAVt9wKmRDiLu-ub7QYBIx8fsHfdI9VlaRe9ithHmER78aEbKOB7JjlLZpkZJ/exec";
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbxW-ie-4mkoi9l7BcTRRSnl7yldd7sCFvS449aWqTCULWOH4gLh1EsaEaFvG2ph099i/exec";
     let currentUserData = null;
 
     // 음성(TTS) 재생 함수
     function speakText(text, callback) {
         if ('speechSynthesis' in window) {
-            window.speechSynthesis.cancel(); // 이전 음성 취소
+            window.speechSynthesis.cancel();
             const utterance = new SpeechSynthesisUtterance(text);
             utterance.lang = 'ko-KR';
             utterance.rate = 1.0;
@@ -208,12 +235,13 @@
         }
     }
 
-    // 초기 화면(입력 전 화면)으로 리셋하는 함수
+    // 초기 화면으로 리셋
     function resetToHome(messageText) {
         currentUserData = null;
         document.getElementById('existingForm').reset();
         document.getElementById('newForm').reset();
         document.getElementById('resultBox').classList.add('hidden');
+        document.getElementById('selectBox').classList.add('hidden');
         switchMode('existing');
         
         if (messageText) {
@@ -226,6 +254,7 @@
     function switchMode(mode) {
         document.getElementById('message').innerText = '';
         document.getElementById('resultBox').classList.add('hidden');
+        document.getElementById('selectBox').classList.add('hidden');
         currentUserData = null;
 
         if (mode === 'existing') {
@@ -241,7 +270,7 @@
         }
     }
 
-    // 회원 데이터 화면 표시
+    // 단일 회원 정보 화면에 표시
     function displayUserInfo(data) {
         currentUserData = data;
         document.getElementById('resName').innerText = data.name;
@@ -249,27 +278,53 @@
         document.getElementById('resGender').innerText = data.gender;
         document.getElementById('resRrn').innerText = data.rrn;
         document.getElementById('resAddress').innerText = data.address;
+        
+        document.getElementById('selectBox').classList.add('hidden');
         document.getElementById('resultBox').classList.remove('hidden');
     }
 
-    // 기존 회원 로그인 및 데이터 조회
+    // 기존 회원 조회
     document.getElementById('existingForm').addEventListener('submit', function(e) {
         e.preventDefault();
 
         const name = document.getElementById('exName').value.trim();
-        const rrn = document.getElementById('exRrn').value.trim();
+        const birth = document.getElementById('exBirth').value.trim();
         const messageDiv = document.getElementById('message');
+
+        if (birth.length !== 6 || isNaN(birth)) {
+            alert('생년월일 6자리를 숫자만 올바르게 입력해주세요. (예: 010101)');
+            return;
+        }
 
         messageDiv.style.color = 'blue';
         messageDiv.innerText = '정보 조회 중...';
         document.getElementById('resultBox').classList.add('hidden');
+        document.getElementById('selectBox').classList.add('hidden');
 
-        fetch(`${GAS_URL}?name=${encodeURIComponent(name)}&rrn=${encodeURIComponent(rrn)}`)
+        fetch(`${GAS_URL}?name=${encodeURIComponent(name)}&birth=${encodeURIComponent(birth)}`)
         .then(response => response.json())
         .then(data => {
             if (data.result === 'found') {
                 messageDiv.innerText = '';
                 displayUserInfo(data.data);
+            } else if (data.result === 'multiple') {
+                // 동명이인이 여러 명인 경우 주소 목록 생성
+                messageDiv.innerText = '';
+                const addressListDiv = document.getElementById('addressList');
+                addressListDiv.innerHTML = '';
+                
+                data.list.forEach((item, index) => {
+                    const div = document.createElement('div');
+                    div.className = 'address-item';
+                    div.innerHTML = `<strong>주소 ${index + 1}:</strong> ${item.address}`;
+                    div.onclick = function() {
+                        displayUserInfo(item);
+                    };
+                    addressListDiv.appendChild(div);
+                });
+                
+                document.getElementById('selectBox').classList.remove('hidden');
+
             } else if (data.result === 'not_found') {
                 messageDiv.style.color = 'red';
                 messageDiv.innerText = '일치하는 회원 정보를 찾을 수 없습니다.';
@@ -294,6 +349,12 @@
         const address = document.getElementById('newAddress').value.trim();
         const messageDiv = document.getElementById('message');
 
+        const cleanRrn = rrn.replace('-', '');
+        if (cleanRrn.length !== 13 || isNaN(cleanRrn)) {
+            alert('주민등록번호 13자리를 올바르게 입력해주세요.');
+            return;
+        }
+
         messageDiv.style.color = 'blue';
         messageDiv.innerText = '등록 중입니다...';
 
@@ -311,21 +372,21 @@
         })
         .then(response => response.json())
         .then(data => {
+            const front6 = cleanRrn.substring(0, 6);
+
             if (data.result === 'already_exists') {
-                // 이미 가입된 회원일 경우: 기존 회원 탭으로 전환 후 해당 회원의 정보 자동 표시
                 switchMode('existing');
                 document.getElementById('exName').value = name;
-                document.getElementById('exRrn').value = rrn;
+                document.getElementById('exBirth').value = front6;
                 
                 messageDiv.style.color = 'orange';
                 messageDiv.innerText = '이미 등록된 회원입니다. 기존 회원 정보로 이동합니다.';
                 displayUserInfo(data.data);
 
             } else if (data.result === 'success') {
-                // 신규 가입 성공 시: 기존 회원 탭으로 이동 후 신규 등록된 정보와 출퇴근 버튼 즉시 표시
                 switchMode('existing');
                 document.getElementById('exName').value = name;
-                document.getElementById('exRrn').value = rrn;
+                document.getElementById('exBirth').value = front6;
 
                 messageDiv.style.color = 'green';
                 messageDiv.innerText = '등록 완료! 신규 등록된 회원 정보입니다.';
@@ -344,7 +405,7 @@
         });
     });
 
-    // 출근 / 퇴근 버튼 전송 및 음성 안내 / 첫 화면 이동
+    // 출근 / 퇴근 처리
     function recordWork(type) {
         if (!currentUserData) {
             alert('로그인 정보가 없습니다.');
@@ -371,14 +432,8 @@
         .then(response => response.json())
         .then(data => {
             if (data.result === 'success') {
-                let voiceMsg = '';
-                if (type === '출근') {
-                    voiceMsg = "안녕하세요 반갑습니다";
-                } else if (type === '퇴근') {
-                    voiceMsg = "수고하셨습니다. 안녕히가십시오";
-                }
+                let voiceMsg = (type === '출근') ? "안녕하세요 반갑습니다" : "수고하셨습니다. 안녕히가십시오";
 
-                // 음성 재생 후 첫 화면으로 초기화 이동
                 speakText(voiceMsg, function() {
                     resetToHome(`${type} 처리되었습니다.`);
                 });
