@@ -213,7 +213,7 @@
 </div>
 
 <script>
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbxW-ie-4mkoi9l7BcTRRSnl7yldd7sCFvS449aWqTCULWOH4gLh1EsaEaFvG2ph099i/exec";
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbwI54KE-v1Ov2DHDhDnM3eRoVjemKrG5njNq-9a25_IHJUUqENrjA5jS90_wXGjMIrB/exec";
     let currentUserData = null;
 
     // 음성(TTS) 재생 함수
@@ -367,7 +367,9 @@
 
         fetch(GAS_URL, {
             method: 'POST',
-            contentType: 'application/json',
+            headers: {
+                'Content-Type': 'text/plain;charset=utf-8', // application/json 대신 text/plain 사용 (CORS 회피)
+            },
             body: JSON.stringify(payload)
         })
         .then(response => response.json())
